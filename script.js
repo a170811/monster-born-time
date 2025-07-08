@@ -57,18 +57,23 @@ class Channel {
     getSortPriority() {
         const status = this.getStatus();
         const statusPriority = {
-            '即將重生': 1,
+            '已失效': 1,
             '出現(機率高)': 2,
             '出現(機率低)': 3,
-            '尚未重生': 4,
-            '已失效': 5
+            '即將重生': 4,
+            '尚未重生': 5
         };
 
         const now = new Date();
         const timeSinceKill = Math.floor((now - this.killTime) / (1000 * 60));
 
-        // 在同一狀態內，按時間排序
-        return statusPriority[status] * 10000 + timeSinceKill;
+        if (status === '已失效') {
+            // 已失效的頻道，按超時時間長到短排序（timeSinceKill越大，超時越長，優先級越高）
+            return statusPriority[status] * 10000 - timeSinceKill;
+        } else {
+            // 其他狀態，按進入狀態的時間先後排序
+            return statusPriority[status] * 10000 + timeSinceKill;
+        }
     }
 }
 
