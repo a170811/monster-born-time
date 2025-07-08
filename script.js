@@ -173,15 +173,6 @@ function createChannelItem(channel) {
         item.classList.add('selected');
     }
 
-    // Checkbox
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.className = 'channel-checkbox';
-    checkbox.checked = channel.selected;
-    checkbox.addEventListener('change', () => {
-        toggleChannelSelection(channel.channelNumber);
-    });
-
     // 頻道號碼
     const channelNumber = document.createElement('span');
     channelNumber.className = 'channel-number';
@@ -203,17 +194,12 @@ function createChannelItem(channel) {
         statusContainer.appendChild(expiredInfo);
     }
 
-    item.appendChild(checkbox);
     item.appendChild(channelNumber);
     item.appendChild(statusContainer);
 
     // 點擊事件
-    item.addEventListener('click', (e) => {
-        // If the click was not on the checkbox itself, toggle the selection.
-        // The checkbox has its own listener.
-        if (e.target.type !== 'checkbox') {
-            toggleChannelSelection(channel.channelNumber);
-        }
+    item.addEventListener('click', () => {
+        toggleChannelSelection(channel.channelNumber);
     });
 
     return item;
