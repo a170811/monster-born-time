@@ -1,0 +1,284 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    gap: 20px;
+    background-color: white;
+    border: 3px solid #333;
+    border-radius: 10px;
+    padding: 20px;
+    min-height: 600px;
+}
+
+/* 左側面板 */
+.left-panel {
+    flex: 1;
+    padding-right: 20px;
+    border-right: 2px solid #333;
+}
+
+.respawn-time-section {
+    margin-bottom: 30px;
+}
+
+.respawn-time-section h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.time-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.input-group label {
+    font-weight: bold;
+    width: 40px;
+}
+
+.input-group input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 2px solid #333;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.status-info {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border: 2px solid #333;
+    border-radius: 5px;
+}
+
+.status-info h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.status-info ul {
+    list-style: none;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.status-info li {
+    margin-bottom: 5px;
+}
+
+/* 狀態顏色標識 */
+.status-not-respawned {
+    color: #666;
+    font-weight: bold;
+}
+
+.status-about-to-respawn {
+    color: #ff9800;
+    font-weight: bold;
+}
+
+.status-low-prob {
+    color: #2196f3;
+    font-weight: bold;
+}
+
+.status-high-prob {
+    color: #4caf50;
+    font-weight: bold;
+}
+
+.status-expired {
+    color: #f44336;
+    font-weight: bold;
+}
+
+.channel-input-section h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.input-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.input-controls input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 2px solid #333;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.input-controls button {
+    padding: 8px 20px;
+    background-color: white;
+    border: 2px solid #333;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.input-controls button:hover {
+    background-color: #f0f0f0;
+}
+
+/* 右側面板 */
+.right-panel {
+    flex: 1;
+    padding-left: 20px;
+}
+
+.channel-status-section h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #333;
+}
+
+.action-buttons button {
+    padding: 8px 20px;
+    background-color: white;
+    border: 2px solid #333;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.action-buttons button:hover:not(:disabled) {
+    background-color: #f0f0f0;
+}
+
+.action-buttons button:disabled {
+    background-color: #e0e0e0;
+    color: #999;
+    cursor: not-allowed;
+}
+
+/* 頻道列表 */
+.channel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.channel-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border: 2px solid #333;
+    border-radius: 5px;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.channel-item:hover {
+    background-color: #f9f9f9;
+}
+
+.channel-item.selected {
+    border-color: #2196f3;
+    background-color: #e3f2fd;
+    box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
+}
+
+.channel-number {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.channel-status {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* 狀態特定樣式 */
+.channel-item[data-status="尚未重生"] .channel-status {
+    color: #666;
+}
+
+.channel-item[data-status="即將重生"] .channel-status {
+    color: #ff9800;
+}
+
+.channel-item[data-status="出現(機率低)"] .channel-status {
+    color: #2196f3;
+}
+
+.channel-item[data-status="出現(機率高)"] .channel-status {
+    color: #4caf50;
+}
+
+.channel-item[data-status="已失效"] .channel-status {
+    color: #f44336;
+}
+
+.expired-info {
+    font-size: 12px;
+    color: #f44336;
+    margin-left: 5px;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    .left-panel {
+        border-right: none;
+        border-bottom: 2px solid #333;
+        padding-right: 0;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
+
+    .right-panel {
+        padding-left: 0;
+    }
+
+    .time-inputs {
+        flex-direction: row;
+        gap: 15px;
+    }
+
+    .input-group {
+        flex: 1;
+    }
+}

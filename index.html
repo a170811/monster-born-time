@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>野王重生時間計算器</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- 左側控制面板 -->
+        <div class="left-panel">
+            <div class="respawn-time-section">
+                <h2>重生時間(分鐘)</h2>
+                <div class="time-inputs">
+                    <div class="input-group">
+                        <label for="min-time">min</label>
+                        <input type="number" id="min-time" min="1" placeholder="最小重生時間">
+                    </div>
+                    <div class="input-group">
+                        <label for="max-time">max</label>
+                        <input type="number" id="max-time" min="1" placeholder="最大重生時間">
+                    </div>
+                </div>
+
+                <!-- 狀態說明 -->
+                <div class="status-info">
+                    <h3>狀態說明：</h3>
+                    <ul>
+                        <li><span class="status-not-respawned">尚未重生</span>：擊殺後到最小重生時間前1分鐘</li>
+                        <li><span class="status-about-to-respawn">即將重生</span>：最小重生時間前1分鐘</li>
+                        <li><span class="status-low-prob">出現(機率低)</span>：最小重生時間到重生區間一半</li>
+                        <li><span class="status-high-prob">出現(機率高)</span>：重生區間一半到最大重生時間</li>
+                        <li><span class="status-expired">已失效</span>：超過最大重生時間</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="channel-input-section">
+                <h2>已擊殺頻道號碼</h2>
+                <div class="input-controls">
+                    <input type="number" id="channel-input" placeholder="channel no." min="1" max="9999">
+                    <button id="confirm-btn">確認</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側頻道狀態面板 -->
+        <div class="right-panel">
+            <div class="channel-status-section">
+                <h2>頻道野王狀態</h2>
+                <div class="action-buttons">
+                    <button id="kill-btn" disabled>擊殺</button>
+                    <button id="remove-expired-btn">移除失效</button>
+                </div>
+                <div class="channel-list" id="channel-list">
+                    <!-- 頻道列表將由JavaScript動態生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
