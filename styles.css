@@ -197,8 +197,9 @@ body {
 
 .channel-item {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
+    gap: 15px;
     padding: 12px 15px;
     border: 2px solid #333;
     border-radius: 5px;
@@ -217,9 +218,16 @@ body {
     box-shadow: 0 0 5px rgba(33, 150, 243, 0.3);
 }
 
+.channel-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
 .channel-number {
     font-weight: bold;
     font-size: 16px;
+    flex-grow: 1;
 }
 
 .channel-status {

@@ -10,7 +10,7 @@ const maxTimeInput = document.getElementById('max-time');
 const channelInput = document.getElementById('channel-input');
 const confirmBtn = document.getElementById('confirm-btn');
 const killBtn = document.getElementById('kill-btn');
-const removeExpiredBtn = document.getElementById('remove-expired-btn');
+const removeSelectedBtn = document.getElementById('remove-selected-btn');
 const channelList = document.getElementById('channel-list');
 
 // 頻道數據結構
@@ -93,7 +93,7 @@ function initEventListeners() {
     // 按鈕事件
     confirmBtn.addEventListener('click', addChannel);
     killBtn.addEventListener('click', killSelectedChannels);
-    removeExpiredBtn.addEventListener('click', removeExpiredChannels);
+    removeSelectedBtn.addEventListener('click', removeSelectedChannels);
 }
 
 // 驗證重生時間輸入
@@ -173,6 +173,15 @@ function createChannelItem(channel) {
         item.classList.add('selected');
     }
 
+    // Checkbox
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'channel-checkbox';
+    checkbox.checked = channel.selected;
+    checkbox.addEventListener('change', () => {
+        toggleChannelSelection(channel.channelNumber);
+    });
+
     // 頻道號碼
     const channelNumber = document.createElement('span');
     channelNumber.className = 'channel-number';
@@ -194,11 +203,18 @@ function createChannelItem(channel) {
         statusContainer.appendChild(expiredInfo);
     }
 
+    item.appendChild(checkbox);
     item.appendChild(channelNumber);
     item.appendChild(statusContainer);
 
     // 點擊事件
-    item.addEventListener('click', () => toggleChannelSelection(channel.channelNumber));
+    item.addEventListener('click', (e) => {
+        // If the click was not on the checkbox itself, toggle the selection.
+        // The checkbox has its own listener.
+        if (e.target.type !== 'checkbox') {
+            toggleChannelSelection(channel.channelNumber);
+        }
+    });
 
     return item;
 }
@@ -238,17 +254,17 @@ function killSelectedChannels() {
     updateChannelList();
 }
 
-// 移除已失效的頻道
-function removeExpiredChannels() {
-    const expiredChannels = channels.filter(ch => ch.getStatus() === '已失效');
+// 移除選中的頻道
+function removeSelectedChannels() {
+    const selectedChannels = channels.filter(ch => ch.selected);
 
-    if (expiredChannels.length === 0) {
-        alert('沒有已失效的頻道');
+    if (selectedChannels.length === 0) {
+        alert('請先選擇要移除的頻道');
         return;
     }
 
-    if (confirm(`確定要移除 ${expiredChannels.length} 個已失效的頻道嗎？`)) {
-        channels = channels.filter(ch => ch.getStatus() !== '已失效');
+    if (confirm(`確定要移除 ${selectedChannels.length} 個選定的頻道嗎？`)) {
+        channels = channels.filter(ch => !ch.selected);
         updateChannelList();
     }
 }
