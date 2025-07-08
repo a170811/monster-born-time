@@ -54,11 +54,17 @@ body {
 
 .input-group label {
     font-weight: bold;
-    width: 40px;
+    width: 70px;
+    /* 增加寬度以容納 "expired" */
+    flex-shrink: 0;
+    text-align: right;
+    /* 文字靠右對齊 */
+    padding-right: 10px;
+    /* 增加一些右邊距 */
 }
 
 .input-group input {
-    flex: 1;
+    flex-grow: 1;
     padding: 8px 12px;
     border: 2px solid #333;
     border-radius: 5px;
@@ -284,12 +290,5 @@ body {
         padding-left: 0;
     }
 
-    .time-inputs {
-        flex-direction: row;
-        gap: 15px;
-    }
-
-    .input-group {
-        flex: 1;
-    }
+    /* 移除針對 time-inputs 和 input-group 的響應式變更，維持垂直排列 */
 }

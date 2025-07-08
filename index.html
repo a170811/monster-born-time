@@ -23,6 +23,10 @@
                         <label for="max-time">max</label>
                         <input type="number" id="max-time" min="1" placeholder="最大重生時間">
                     </div>
+                    <div class="input-group">
+                        <label for="expired-time">expired</label>
+                        <input type="number" id="expired-time" min="1" value="5" placeholder="失效時間">
+                    </div>
                 </div>
 
                 <!-- 狀態說明 -->
@@ -34,8 +38,9 @@
                         <li><span class="status-about-to-respawn">即將重生</span>：最小重生時間前1分鐘</li>
                         <li><span class="status-low-prob">出現(機率低)</span>：最小重生時間到重生區間一半</li>
                         <li><span class="status-high-prob">出現(機率高)</span>：重生區間一半到最大重生時間</li>
-                        <li><span class="status-expired">已失效</span>：超過最大重生時間</li>
+                        <li><span class="status-expired">超過重生時間 xx 分鐘</span>：超過最大重生時間，xx 為超時分鐘數</li>
                     </ul>
+                    <p><strong>自動移除機制</strong>：當頻道超時時間超過右方設定的 `expired` 分鐘數時，將會自動從列表中移除。</p>
                 </details>
             </div>
 

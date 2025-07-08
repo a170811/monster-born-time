@@ -2,11 +2,13 @@
 let channels = [];
 let minRespawnTime = 0;
 let maxRespawnTime = 0;
+let expiredTime = 5; // 預設值
 let updateInterval;
 
 // DOM元素
 const minTimeInput = document.getElementById('min-time');
 const maxTimeInput = document.getElementById('max-time');
+const expiredTimeInput = document.getElementById('expired-time');
 const channelInput = document.getElementById('channel-input');
 const confirmBtn = document.getElementById('confirm-btn');
 const killBtn = document.getElementById('kill-btn');
@@ -15,11 +17,12 @@ const channelList = document.getElementById('channel-list');
 
 // 頻道數據結構
 class Channel {
-    constructor(channelNumber, killTime, minRespawn, maxRespawn) {
+    constructor(channelNumber, killTime, minRespawn, maxRespawn, expired) {
         this.channelNumber = channelNumber;
         this.killTime = killTime;
         this.minRespawnTime = minRespawn;
         this.maxRespawnTime = maxRespawn;
+        this.expiredTime = expired;
         this.selected = false;
     }
 
@@ -42,11 +45,12 @@ class Channel {
         } else if (timeSinceKillInSeconds >= halfTimeInSeconds && timeSinceKillInSeconds <= maxTimeInSeconds) {
             return '出現(機率高)';
         } else {
-            return '已失效';
+            const expiredMinutes = this.getExpiredMinutes();
+            return `超過重生時間 ${expiredMinutes} 分鐘`;
         }
     }
 
-    // 獲取超時分鐘數（僅用於已失效狀態）
+    // 獲取超時分鐘數
     getExpiredMinutes() {
         const now = new Date();
         const timeSinceKill = Math.floor((now - this.killTime) / (1000 * 60));
@@ -57,7 +61,6 @@ class Channel {
     getSortPriority() {
         const status = this.getStatus();
         const statusPriority = {
-            '已失效': 1,
             '出現(機率高)': 2,
             '出現(機率低)': 3,
             '即將重生': 4,
@@ -67,9 +70,9 @@ class Channel {
         const now = new Date();
         const timeSinceKill = Math.floor((now - this.killTime) / (1000 * 60));
 
-        if (status === '已失效') {
-            // 已失效的頻道，按超時時間長到短排序（timeSinceKill越大，超時越長，優先級越高）
-            return statusPriority[status] * 10000 - timeSinceKill;
+        if (status.startsWith('超過重生時間')) {
+            // 超過重生時間的頻道，按超時時間長到短排序（timeSinceKill越大，超時越長，優先級越高）
+            return 1 * 10000 - timeSinceKill;
         } else {
             // 其他狀態，按進入狀態的時間先後排序
             return statusPriority[status] * 10000 + timeSinceKill;
@@ -82,6 +85,7 @@ function initEventListeners() {
     // 重生時間輸入驗證
     minTimeInput.addEventListener('input', validateRespawnTime);
     maxTimeInput.addEventListener('input', validateRespawnTime);
+    expiredTimeInput.addEventListener('input', validateRespawnTime);
 
     // 頻道輸入
     channelInput.addEventListener('keypress', function (e) {
@@ -100,10 +104,12 @@ function initEventListeners() {
 function validateRespawnTime() {
     const minTime = parseInt(minTimeInput.value) || 0;
     const maxTime = parseInt(maxTimeInput.value) || 0;
+    const expired = parseInt(expiredTimeInput.value) || 0;
 
-    if (minTime > 0 && maxTime > 0 && maxTime > minTime) {
+    if (minTime > 0 && maxTime > 0 && maxTime > minTime && expired > 0) {
         minRespawnTime = minTime;
         maxRespawnTime = maxTime;
+        expiredTime = expired;
         confirmBtn.disabled = false;
     } else {
         confirmBtn.disabled = true;
@@ -132,7 +138,7 @@ function addChannel() {
     }
 
     // 創建新頻道（擊殺時間為當前時間）
-    const newChannel = new Channel(channelNumber, new Date(), minRespawnTime, maxRespawnTime);
+    const newChannel = new Channel(channelNumber, new Date(), minRespawnTime, maxRespawnTime, expiredTime);
     channels.push(newChannel);
 
     // 清空輸入框
@@ -144,6 +150,14 @@ function addChannel() {
 
 // 更新頻道列表顯示
 function updateChannelList() {
+    // 移除超時的頻道
+    channels = channels.filter(channel => {
+        if (channel.getStatus().startsWith('超過重生時間')) {
+            return channel.getExpiredMinutes() <= channel.expiredTime;
+        }
+        return true;
+    });
+
     // 排序頻道
     channels.sort((a, b) => a.getSortPriority() - b.getSortPriority());
 
@@ -186,14 +200,6 @@ function createChannelItem(channel) {
 
     statusContainer.appendChild(channelStatus);
 
-    // 如果是已失效狀態，顯示超時分鐘數
-    if (status === '已失效') {
-        const expiredInfo = document.createElement('span');
-        expiredInfo.className = 'expired-info';
-        expiredInfo.textContent = `(超時${channel.getExpiredMinutes()}分鐘)`;
-        statusContainer.appendChild(expiredInfo);
-    }
-
     item.appendChild(channelNumber);
     item.appendChild(statusContainer);
 
@@ -233,6 +239,7 @@ function killSelectedChannels() {
         channel.killTime = new Date();
         channel.minRespawnTime = minRespawnTime;
         channel.maxRespawnTime = maxRespawnTime;
+        channel.expiredTime = expiredTime;
         channel.selected = false;
     });
 
