@@ -1,3 +1,7 @@
 * 參考 CHANGELOG.md 來得知目前的狀態
 * 在完成一項任務時，向使用者確認後，將此次更動記錄到 CHANGELOG.md 中，並且壓上時間
 * 每次更動程式碼時，都應該壓上版號，版號更新 follow semantic version，並且將版號更新至CHANGELOG.md 中
+    * 介面有大更動更新 major 版號
+    * 一般功能新增或是優化，請更新 minor 版號
+    * 修 bug ，請更新 micro 版號
+    * 文件更新等不需要動到使用者介面或是程式碼時，不需要更新版號
