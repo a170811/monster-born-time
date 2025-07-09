@@ -13,6 +13,7 @@ const channelInput = document.getElementById('channel-input');
 const confirmBtn = document.getElementById('confirm-btn');
 const killBtn = document.getElementById('kill-btn');
 const removeSelectedBtn = document.getElementById('remove-selected-btn');
+const clearBtn = document.getElementById('clear-btn');
 const channelList = document.getElementById('channel-list');
 
 // 頻道數據結構
@@ -98,6 +99,7 @@ function initEventListeners() {
     confirmBtn.addEventListener('click', addChannel);
     killBtn.addEventListener('click', killSelectedChannels);
     removeSelectedBtn.addEventListener('click', removeSelectedChannels);
+    clearBtn.addEventListener('click', clearAllData);
 }
 
 // 驗證重生時間輸入
@@ -114,6 +116,7 @@ function validateRespawnTime() {
     } else {
         confirmBtn.disabled = true;
     }
+    saveData();
 }
 
 // 新增頻道
@@ -146,6 +149,7 @@ function addChannel() {
 
     // 更新顯示
     updateChannelList();
+    saveData();
 }
 
 // 更新頻道列表顯示
@@ -245,6 +249,7 @@ function killSelectedChannels() {
 
     // 更新顯示
     updateChannelList();
+    saveData();
 }
 
 // 移除選中的頻道
@@ -258,6 +263,49 @@ function removeSelectedChannels() {
 
     if (confirm(`確定要移除 ${selectedChannels.length} 個選定的頻道嗎？`)) {
         channels = channels.filter(ch => !ch.selected);
+        updateChannelList();
+        saveData();
+    }
+}
+
+// 清除所有資料
+function clearAllData() {
+    if (confirm('確定要清除所有頻道和設定嗎？')) {
+        localStorage.removeItem('monsterBornTimeData');
+        location.reload();
+    }
+}
+
+// 儲存資料到localStorage
+function saveData() {
+    const data = {
+        channels: channels,
+        minRespawnTime: minRespawnTime,
+        maxRespawnTime: maxRespawnTime,
+        expiredTime: expiredTime
+    };
+    localStorage.setItem('monsterBornTimeData', JSON.stringify(data));
+}
+
+// 從localStorage載入資料
+function loadData() {
+    const savedData = localStorage.getItem('monsterBornTimeData');
+    if (savedData) {
+        const data = JSON.parse(savedData);
+        minRespawnTime = data.minRespawnTime || 0;
+        maxRespawnTime = data.maxRespawnTime || 0;
+        expiredTime = data.expiredTime || 5;
+
+        minTimeInput.value = minRespawnTime;
+        maxTimeInput.value = maxRespawnTime;
+        expiredTimeInput.value = expiredTime;
+
+        channels = data.channels.map(ch => {
+            const channel = new Channel(ch.channelNumber, new Date(ch.killTime), ch.minRespawnTime, ch.maxRespawnTime, ch.expiredTime);
+            channel.selected = ch.selected;
+            return channel;
+        });
+
         updateChannelList();
     }
 }
@@ -278,6 +326,7 @@ function stopRealTimeUpdate() {
 
 // 頁面初始化
 document.addEventListener('DOMContentLoaded', function () {
+    loadData();
     initEventListeners();
     validateRespawnTime();
     startRealTimeUpdate();
