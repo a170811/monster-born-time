@@ -177,8 +177,8 @@ function updateChannelList() {
         return true;
     });
 
-    // 排序頻道
-    channels.sort((a, b) => a.getSortPriority() - b.getSortPriority());
+    // 排序頻道：從擊殺後經過最久時間到擊殺後經過時間最短的頻道
+    channels.sort((a, b) => a.killTime.getTime() - b.killTime.getTime());
 
     // 清空列表
     channelList.innerHTML = '';
