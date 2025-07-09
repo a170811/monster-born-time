@@ -244,6 +244,12 @@ body {
     font-weight: bold;
 }
 
+.status-container {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
 /* 狀態特定樣式 */
 .channel-item[data-status="尚未重生"] .channel-status {
     color: #666;
@@ -291,4 +297,9 @@ body {
     }
 
     /* 移除針對 time-inputs 和 input-group 的響應式變更，維持垂直排列 */
+}
+
+.channel-countdown {
+    font-size: 12px;
+    color: #999;
 }

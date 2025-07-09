@@ -79,6 +79,21 @@ class Channel {
             return statusPriority[status] * 10000 + timeSinceKill;
         }
     }
+
+    // 新增：計算重生倒數時間
+    getCountdown() {
+        const now = new Date();
+        const timeSinceKillInSeconds = Math.floor((now - this.killTime) / 1000);
+        const maxTimeInSeconds = this.maxRespawnTime * 60;
+        const remainingSeconds = maxTimeInSeconds - timeSinceKillInSeconds;
+
+        if (remainingSeconds > 0) {
+            const minutes = Math.ceil(remainingSeconds / 60);
+            return `倒數 ${minutes} 分`;
+        } else {
+            return null; // 不顯示倒數
+        }
+    }
 }
 
 // 初始化事件監聽器
@@ -198,11 +213,21 @@ function createChannelItem(channel) {
 
     // 狀態顯示
     const statusContainer = document.createElement('div');
+    statusContainer.className = 'status-container'; // Add this class
     const channelStatus = document.createElement('span');
     channelStatus.className = 'channel-status';
     channelStatus.textContent = status;
 
     statusContainer.appendChild(channelStatus);
+
+    // 倒數計時
+    const countdown = channel.getCountdown();
+    if (countdown) {
+        const countdownSpan = document.createElement('span');
+        countdownSpan.className = 'channel-countdown';
+        countdownSpan.textContent = countdown;
+        statusContainer.appendChild(countdownSpan);
+    }
 
     item.appendChild(channelNumber);
     item.appendChild(statusContainer);
