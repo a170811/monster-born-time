@@ -1,2 +1,3 @@
 * 參考 CHANGELOG.md 來得知目前的狀態
 * 在完成一項任務時，向使用者確認後，將此次更動記錄到 CHANGELOG.md 中，並且壓上時間
+* 每次更動程式碼時，都應該壓上版號，版號更新 follow semantic version，並且將版號更新至CHANGELOG.md 中
