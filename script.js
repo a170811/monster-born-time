@@ -390,13 +390,19 @@ function exportData() {
         const encodedData = btoa(jsonString);
         const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
 
-        navigator.clipboard.writeText(shareUrl).then(() => {
-            alert('分享連結已複製到剪貼簿！');
-        }).catch(err => {
-            console.error('複製失敗: ', err);
-            alert('複製失敗，請手動複製連結。');
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert('分享連結已複製到剪貼簿！');
+            }).catch(err => {
+                console.error('複製失敗: ', err);
+                alert('自動複製失敗，請手動複製。');
+                prompt('請手動複製此連結:', shareUrl);
+            });
+        } else {
+            // Fallback for browsers that don't support Clipboard API or are not in a secure context
+            alert('瀏覽器不支援自動複製，請手動複製。');
             prompt('請手動複製此連結:', shareUrl);
-        });
+        }
 
     } catch (e) {
         console.error('建立分享連結失敗:', e);
