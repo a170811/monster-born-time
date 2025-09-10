@@ -40,6 +40,7 @@ const channelInput = document.getElementById('channel-input');
 const confirmBtn = document.getElementById('confirm-btn');
 const killBtn = document.getElementById('kill-btn');
 const removeSelectedBtn = document.getElementById('remove-selected-btn');
+const clearCurrentBtn = document.getElementById('clear-current-btn');
 const clearBtn = document.getElementById('clear-btn');
 const shareBtn = document.getElementById('share-btn');
 const channelList = document.getElementById('channel-list');
@@ -52,12 +53,13 @@ const closeModalBtn = document.getElementById('close-modal-btn');
 
 // 頻道數據結構
 class Channel {
-    constructor(channelNumber, killTime, minRespawn, maxRespawn, expired) {
+    constructor(channelNumber, killTime, minRespawn, maxRespawn, expired, monsterType = 'custom') {
         this.channelNumber = channelNumber;
         this.killTime = killTime;
         this.minRespawnTime = minRespawn;
         this.maxRespawnTime = maxRespawn;
         this.expiredTime = expired;
+        this.monsterType = monsterType;
         this.selected = false;
     }
 
@@ -130,6 +132,24 @@ class Channel {
     }
 }
 
+// 檢查自定義模式的時間設定一致性
+function checkCustomModeConsistency() {
+    const customChannels = channels.filter(channel => channel.monsterType === 'custom');
+    
+    if (customChannels.length > 0) {
+        // 檢查是否有不一致的時間設定
+        const hasInconsistentSettings = customChannels.some(channel => 
+            channel.minRespawnTime !== minRespawnTime || 
+            channel.maxRespawnTime !== maxRespawnTime || 
+            channel.expiredTime !== expiredTime
+        );
+        
+        if (hasInconsistentSettings) {
+            alert('偵測到現有頻道的時間設定與目前設定不符，建議使用「清空頻道」按鈕清空資料後重新開始。');
+        }
+    }
+}
+
 // 野王選擇處理函數
 function handleMonsterSelection() {
     const selectedMonster = monsterSelect.value;
@@ -138,7 +158,10 @@ function handleMonsterSelection() {
     const monster = monsterDatabase[selectedMonster];
     
     if (selectedMonster === 'custom') {
-        // 自訂模式：啟用輸入框
+        // 自訂模式：檢查現有頻道的時間設定是否一致
+        checkCustomModeConsistency();
+        
+        // 啟用輸入框
         minTimeInput.disabled = false;
         maxTimeInput.disabled = false;
         expiredTimeInput.disabled = false;
@@ -168,6 +191,9 @@ function handleMonsterSelection() {
         confirmBtn.disabled = false;
     }
     
+    // 更新頻道列表顯示
+    updateChannelList();
+    
     // 驗證並儲存
     validateRespawnTime();
     saveData();
@@ -194,6 +220,7 @@ function initEventListeners() {
     confirmBtn.addEventListener('click', addChannel);
     killBtn.addEventListener('click', killSelectedChannels);
     removeSelectedBtn.addEventListener('click', removeSelectedChannels);
+    clearCurrentBtn.addEventListener('click', clearCurrentMonsterChannels);
     clearBtn.addEventListener('click', clearAllData);
     shareBtn.addEventListener('click', exportData);
 
@@ -238,14 +265,31 @@ function addChannel() {
         return;
     }
 
-    // 檢查是否已存在
-    if (channels.find(ch => ch.channelNumber === channelNumber)) {
-        alert('此頻道已存在');
+    // 檢查是否已存在相同頻道號碼和野王類型的組合
+    if (channels.find(ch => ch.channelNumber === channelNumber && ch.monsterType === currentMonsterType)) {
+        alert('此頻道在當前野王類型下已存在');
         return;
     }
 
+    // 如果是自定義模式，檢查時間設定一致性
+    if (currentMonsterType === 'custom') {
+        const customChannels = channels.filter(channel => channel.monsterType === 'custom');
+        if (customChannels.length > 0) {
+            const hasInconsistentSettings = customChannels.some(channel => 
+                channel.minRespawnTime !== minRespawnTime || 
+                channel.maxRespawnTime !== maxRespawnTime || 
+                channel.expiredTime !== expiredTime
+            );
+            
+            if (hasInconsistentSettings) {
+                alert('偵測到現有自定義頻道的時間設定與目前設定不符，建議使用「初始化」按鈕清空所有資料後重新開始。');
+                return;
+            }
+        }
+    }
+
     // 創建新頻道（擊殺時間為當前時間）
-    const newChannel = new Channel(channelNumber, new Date(), minRespawnTime, maxRespawnTime, expiredTime);
+    const newChannel = new Channel(channelNumber, new Date(), minRespawnTime, maxRespawnTime, expiredTime, currentMonsterType);
     channels.push(newChannel);
 
     // 清空輸入框
@@ -266,14 +310,17 @@ function updateChannelList() {
         return true;
     });
 
+    // 根據當前野王類型篩選頻道
+    const filteredChannels = channels.filter(channel => channel.monsterType === currentMonsterType);
+
     // 排序頻道：從擊殺後經過最久時間到擊殺後經過時間最短的頻道
-    channels.sort((a, b) => a.killTime.getTime() - b.killTime.getTime());
+    filteredChannels.sort((a, b) => a.killTime.getTime() - b.killTime.getTime());
 
     // 清空列表
     channelList.innerHTML = '';
 
     // 生成頻道項目
-    channels.forEach(channel => {
+    filteredChannels.forEach(channel => {
         const channelItem = createChannelItem(channel);
         channelList.appendChild(channelItem);
     });
@@ -331,7 +378,7 @@ function createChannelItem(channel) {
 
 // 切換頻道選擇狀態
 function toggleChannelSelection(channelNumber) {
-    const channel = channels.find(ch => ch.channelNumber === channelNumber);
+    const channel = channels.find(ch => ch.channelNumber === channelNumber && ch.monsterType === currentMonsterType);
     if (channel) {
         channel.selected = !channel.selected;
         updateChannelList();
@@ -382,9 +429,26 @@ function removeSelectedChannels() {
     }
 }
 
+// 清空當前野王的頻道
+function clearCurrentMonsterChannels() {
+    const currentChannels = channels.filter(channel => channel.monsterType === currentMonsterType);
+    
+    if (currentChannels.length === 0) {
+        alert('當前野王類型沒有頻道可清空');
+        return;
+    }
+    
+    const monsterName = monsterDatabase[currentMonsterType].name;
+    if (confirm(`確定要清空所有「${monsterName}」的頻道嗎？`)) {
+        channels = channels.filter(channel => channel.monsterType !== currentMonsterType);
+        updateChannelList();
+        saveData();
+    }
+}
+
 // 清除所有資料
 function clearAllData() {
-    if (confirm('確定要清除所有頻道和設定嗎？')) {
+    if (confirm('確定要清除所有野王的所有頻道和設定嗎？')) {
         localStorage.removeItem('monsterBornTimeData');
         location.reload();
     }
@@ -431,7 +495,9 @@ function loadData() {
         expiredTimeInput.value = expiredTime;
 
         channels = data.channels.map(ch => {
-            const channel = new Channel(ch.channelNumber, new Date(ch.killTime), ch.minRespawnTime, ch.maxRespawnTime, ch.expiredTime);
+            // 處理舊資料遷移：如果沒有 monsterType 屬性，設為 'custom'
+            const monsterType = ch.monsterType || 'custom';
+            const channel = new Channel(ch.channelNumber, new Date(ch.killTime), ch.minRespawnTime, ch.maxRespawnTime, ch.expiredTime, monsterType);
             channel.selected = ch.selected;
             return channel;
         });
