@@ -17,6 +17,12 @@ const clearBtn = document.getElementById('clear-btn');
 const shareBtn = document.getElementById('share-btn');
 const channelList = document.getElementById('channel-list');
 
+// Modal DOM 元素
+const shareModal = document.getElementById('share-modal');
+const shareUrlInput = document.getElementById('share-url-input');
+const closeModalBtn = document.getElementById('close-modal-btn');
+
+
 // 頻道數據結構
 class Channel {
     constructor(channelNumber, killTime, minRespawn, maxRespawn, expired) {
@@ -117,6 +123,14 @@ function initEventListeners() {
     removeSelectedBtn.addEventListener('click', removeSelectedChannels);
     clearBtn.addEventListener('click', clearAllData);
     shareBtn.addEventListener('click', exportData);
+
+    // Modal 事件
+    closeModalBtn.addEventListener('click', closeShareModal);
+    shareModal.addEventListener('click', function (e) {
+        if (e.target === shareModal) {
+            closeShareModal();
+        }
+    });
 }
 
 // 驗證重生時間輸入
@@ -373,6 +387,17 @@ function importDataFromUrl() {
     return false;
 }
 
+// Share Modal Functions
+function showShareModal(url) {
+    shareUrlInput.value = url;
+    shareModal.style.display = 'flex';
+    shareUrlInput.select();
+}
+
+function closeShareModal() {
+    shareModal.style.display = 'none';
+}
+
 // 匯出資料為URL
 function exportData() {
     const savedData = localStorage.getItem('monsterBornTimeData');
@@ -382,7 +407,6 @@ function exportData() {
     }
 
     const data = JSON.parse(savedData);
-    // 只分享頻道資訊，不分享個人設定
     const channelsToShare = data.channels;
 
     try {
@@ -394,14 +418,11 @@ function exportData() {
             navigator.clipboard.writeText(shareUrl).then(() => {
                 alert('分享連結已複製到剪貼簿！');
             }).catch(err => {
-                console.error('複製失敗: ', err);
-                alert('自動複製失敗，請手動複製。');
-                prompt('請手動複製此連結:', shareUrl);
+                console.error('自動複製失敗，顯示手動複製視窗: ', err);
+                showShareModal(shareUrl);
             });
         } else {
-            // Fallback for browsers that don't support Clipboard API or are not in a secure context
-            alert('瀏覽器不支援自動複製，請手動複製。');
-            prompt('請手動複製此連結:', shareUrl);
+            showShareModal(shareUrl);
         }
 
     } catch (e) {
