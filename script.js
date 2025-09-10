@@ -1,11 +1,38 @@
+// 野王資料庫
+const monsterDatabase = {
+    'custom': {
+        name: '自訂',
+        minRespawn: null,
+        maxRespawn: null,
+        expired: 5,
+        description: '手動設定重生時間'
+    },
+    'snow_yeti': {
+        name: '雪毛怪人',
+        minRespawn: 45,
+        maxRespawn: 68,
+        expired: 10,
+        description: '重生時間：45-68分鐘'
+    },
+    'black_ring_king': {
+        name: '黑輪王',
+        minRespawn: 780,  // 13小時 = 780分鐘
+        maxRespawn: 1020, // 17小時 = 1020分鐘
+        expired: 60,      // 較長的失效時間，適合長時間重生的野王
+        description: '重生時間：13-17小時'
+    }
+};
+
 // 全域變數
 let channels = [];
 let minRespawnTime = 0;
 let maxRespawnTime = 0;
 let expiredTime = 5; // 預設值
+let currentMonsterType = 'custom'; // 當前選擇的野王類型
 let updateInterval;
 
 // DOM元素
+const monsterSelect = document.getElementById('monster-select');
 const minTimeInput = document.getElementById('min-time');
 const maxTimeInput = document.getElementById('max-time');
 const expiredTimeInput = document.getElementById('expired-time');
@@ -103,8 +130,54 @@ class Channel {
     }
 }
 
+// 野王選擇處理函數
+function handleMonsterSelection() {
+    const selectedMonster = monsterSelect.value;
+    currentMonsterType = selectedMonster;
+    
+    const monster = monsterDatabase[selectedMonster];
+    
+    if (selectedMonster === 'custom') {
+        // 自訂模式：啟用輸入框
+        minTimeInput.disabled = false;
+        maxTimeInput.disabled = false;
+        expiredTimeInput.disabled = false;
+        
+        // 清空輸入框或保持現有值
+        if (minRespawnTime === 0 && maxRespawnTime === 0) {
+            minTimeInput.value = '';
+            maxTimeInput.value = '';
+            expiredTimeInput.value = '5';
+        }
+    } else {
+        // 預設野王模式：填入預設值並禁用輸入框
+        minTimeInput.value = monster.minRespawn;
+        maxTimeInput.value = monster.maxRespawn;
+        expiredTimeInput.value = monster.expired;
+        
+        minTimeInput.disabled = true;
+        maxTimeInput.disabled = true;
+        expiredTimeInput.disabled = true;
+        
+        // 更新全域變數
+        minRespawnTime = monster.minRespawn;
+        maxRespawnTime = monster.maxRespawn;
+        expiredTime = monster.expired;
+        
+        // 啟用確認按鈕
+        confirmBtn.disabled = false;
+    }
+    
+    // 驗證並儲存
+    validateRespawnTime();
+    saveData();
+}
+
 // 初始化事件監聽器
 function initEventListeners() {
+    // 野王選擇
+    monsterSelect.addEventListener('change', handleMonsterSelection);
+    
     // 重生時間輸入驗證
     minTimeInput.addEventListener('input', validateRespawnTime);
     maxTimeInput.addEventListener('input', validateRespawnTime);
@@ -323,7 +396,8 @@ function saveData() {
         channels: channels,
         minRespawnTime: minRespawnTime,
         maxRespawnTime: maxRespawnTime,
-        expiredTime: expiredTime
+        expiredTime: expiredTime,
+        currentMonsterType: currentMonsterType
     };
     localStorage.setItem('monsterBornTimeData', JSON.stringify(data));
 }
@@ -336,6 +410,21 @@ function loadData() {
         minRespawnTime = data.minRespawnTime || 0;
         maxRespawnTime = data.maxRespawnTime || 0;
         expiredTime = data.expiredTime || 5;
+        currentMonsterType = data.currentMonsterType || 'custom';
+
+        // 設定野王選擇
+        monsterSelect.value = currentMonsterType;
+        
+        // 根據野王類型設定輸入框狀態
+        if (currentMonsterType === 'custom') {
+            minTimeInput.disabled = false;
+            maxTimeInput.disabled = false;
+            expiredTimeInput.disabled = false;
+        } else {
+            minTimeInput.disabled = true;
+            maxTimeInput.disabled = true;
+            expiredTimeInput.disabled = true;
+        }
 
         minTimeInput.value = minRespawnTime;
         maxTimeInput.value = maxRespawnTime;
