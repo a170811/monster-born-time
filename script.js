@@ -14,6 +14,7 @@ const confirmBtn = document.getElementById('confirm-btn');
 const killBtn = document.getElementById('kill-btn');
 const removeSelectedBtn = document.getElementById('remove-selected-btn');
 const clearBtn = document.getElementById('clear-btn');
+const shareBtn = document.getElementById('share-btn');
 const channelList = document.getElementById('channel-list');
 
 // 頻道數據結構
@@ -115,6 +116,7 @@ function initEventListeners() {
     killBtn.addEventListener('click', killSelectedChannels);
     removeSelectedBtn.addEventListener('click', removeSelectedChannels);
     clearBtn.addEventListener('click', clearAllData);
+    shareBtn.addEventListener('click', exportData);
 }
 
 // 驗證重生時間輸入
@@ -335,6 +337,74 @@ function loadData() {
     }
 }
 
+// 從URL匯入資料
+function importDataFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const data = urlParams.get('data');
+
+    if (data) {
+        try {
+            const decodedString = atob(data);
+            const importedChannels = JSON.parse(decodedString);
+
+            if (Array.isArray(importedChannels)) {
+                const currentSettings = {
+                    minRespawnTime: minRespawnTime,
+                    maxRespawnTime: maxRespawnTime,
+                    expiredTime: expiredTime
+                };
+
+                const newData = {
+                    ...currentSettings,
+                    channels: importedChannels
+                };
+
+                localStorage.setItem('monsterBornTimeData', JSON.stringify(newData));
+                // 清理URL，避免重新整理時重複匯入
+                window.history.replaceState({}, document.title, window.location.pathname);
+                alert('頻道資訊已成功匯入！');
+                return true;
+            }
+        } catch (e) {
+            console.error('無法解析分享的資料:', e);
+            alert('匯入資料失敗，分享連結可能已損毀。');
+        }
+    }
+    return false;
+}
+
+// 匯出資料為URL
+function exportData() {
+    const savedData = localStorage.getItem('monsterBornTimeData');
+    if (!savedData || JSON.parse(savedData).channels.length === 0) {
+        alert('沒有可分享的頻道資訊。');
+        return;
+    }
+
+    const data = JSON.parse(savedData);
+    // 只分享頻道資訊，不分享個人設定
+    const channelsToShare = data.channels;
+
+    try {
+        const jsonString = JSON.stringify(channelsToShare);
+        const encodedData = btoa(jsonString);
+        const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
+
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            alert('分享連結已複製到剪貼簿！');
+        }).catch(err => {
+            console.error('複製失敗: ', err);
+            alert('複製失敗，請手動複製連結。');
+            prompt('請手動複製此連結:', shareUrl);
+        });
+
+    } catch (e) {
+        console.error('建立分享連結失敗:', e);
+        alert('建立分享連結時發生錯誤。');
+    }
+}
+
+
 // 開始即時更新
 function startRealTimeUpdate() {
     updateInterval = setInterval(() => {
@@ -351,6 +421,7 @@ function stopRealTimeUpdate() {
 
 // 頁面初始化
 document.addEventListener('DOMContentLoaded', function () {
+    importDataFromUrl();
     loadData();
     initEventListeners();
     validateRespawnTime();
